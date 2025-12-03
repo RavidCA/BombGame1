@@ -1,4 +1,4 @@
-# Game1 - Falling bombs גגגגגגגגגגגג
+# Game1 - Falling bomb
 
 - Night / Not Night modes
 - ## Controls
