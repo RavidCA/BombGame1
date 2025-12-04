@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var vibrator: Vibrator
 
-    // השחקן יתחיל משמאל/0
+    // השחקן יתחיל משמאל/0      0 שמאל 1 אמצע 2 ימין
     private var actorPosition = 0
 
     private var bombLane = 0
@@ -83,7 +83,7 @@ private fun initBomb() {
     bomb = findViewById(R.id.Bomb)
 
     bomb.post {
-        bombLane = (0..1).random()
+        bombLane = (0..2).random()
         bomb.x = getBombLaneX(bombLane)
         bomb.y = 0f
 
@@ -103,10 +103,18 @@ private fun initBomb() {
             actorPosition = 0
             updateActorPosition()
         }
+        else if (actorPosition == 2) {
+            actorPosition = 1
+            updateActorPosition()
+        }
     }
     private fun moveRight() {
         if (actorPosition == 0) {
             actorPosition = 1
+            updateActorPosition()
+        }
+        else if (actorPosition == 1) {
+            actorPosition = 2
             updateActorPosition()
         }
     }
@@ -123,13 +131,23 @@ private fun initBomb() {
         val screenWidth = resources.displayMetrics.widthPixels
 
         return when (position) {
-            0 -> screenWidth * 0.10f
-            1 -> screenWidth * 0.60f
-            else -> screenWidth * 0.5f
+            0 -> screenWidth * 0.10f   // שמאל
+            1 -> screenWidth * 0.35f   // אמצע
+            2 -> screenWidth * 0.60f   // ימין
+            else -> screenWidth * 0.35f
         }
     }
 
+    private fun getBombLaneX(lane: Int): Float{
+        val screenWidth = resources.displayMetrics.widthPixels
 
+        return when (lane)  {
+            0 -> screenWidth * 0.10f
+            1 -> screenWidth * 0.35f
+            2 -> screenWidth * 0.60f
+            else -> screenWidth * 0.35f
+        }
+    }
 
     private fun loseLife() {
         vibrate(150)  // רטט של 150m
@@ -153,25 +171,13 @@ private fun initBomb() {
     }
 
 
-
-
-    private fun getBombLaneX(lane: Int): Float{
-    val screenWidth = resources.displayMetrics.widthPixels
-
-    return when (lane)  {
-        0 -> screenWidth * 0.10f
-        1 -> screenWidth * 0.60f
-        else -> screenWidth * 0.5f
-    }
-}
-
     private fun startBombFall() {
         if (isGameOver) return
         val screenHeight = resources.displayMetrics.heightPixels
         val bottomMargin = 150
         val targetY = screenHeight - bottomMargin - bomb.height
 
-        bombLane = (0..1).random()
+        bombLane = (0..2).random()
         bomb.x = getBombLaneX(bombLane)
         bomb.y = 0f
         bomb.visibility = View.VISIBLE
