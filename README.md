@@ -1,6 +1,8 @@
-# Game1 - Falling bomb
+# Game - Falling bomb
 
 - Night / Not Night modes
+- 3 roads of bombs / man
+- crash notification
 - ## Controls
 - Left Arrow: Move character left
 - Right Arrow: Move character right
@@ -9,4 +11,5 @@
 - 3 falling bomb lanes
 - Heart/life system
 - Game Over screen
+- vibrate function
 - Restart game functionality
