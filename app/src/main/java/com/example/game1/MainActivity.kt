@@ -131,9 +131,9 @@ private fun initBomb() {
         val screenWidth = resources.displayMetrics.widthPixels
 
         return when (position) {
-            0 -> screenWidth * 0.10f   // שמאל
-            1 -> screenWidth * 0.35f   // אמצע
-            2 -> screenWidth * 0.60f   // ימין
+            0 -> screenWidth * 0.05f   // שמאל
+            1 -> screenWidth * 0.40f   // אמצע
+            2 -> screenWidth * 0.75f   // ימין
             else -> screenWidth * 0.35f
         }
     }
@@ -142,9 +142,9 @@ private fun initBomb() {
         val screenWidth = resources.displayMetrics.widthPixels
 
         return when (lane)  {
-            0 -> screenWidth * 0.10f
-            1 -> screenWidth * 0.35f
-            2 -> screenWidth * 0.60f
+            0 -> screenWidth * 0.05f
+            1 -> screenWidth * 0.40f
+            2 -> screenWidth * 0.75f
             else -> screenWidth * 0.35f
         }
     }

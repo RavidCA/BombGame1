@@ -10,7 +10,6 @@
     android:layoutDirection="ltr"
     tools:context=".MainActivity">        <!-- ltr אומר שיכריח את המערכת לעבוד לפי שמאל לימין -->
 
-
     <ImageView
         android:id="@+id/Left_arrow"
         android:layout_width="89dp"
@@ -26,7 +25,7 @@
         android:id="@+id/Right_arrow"
         android:layout_width="89dp"
         android:layout_height="75dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="32dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
