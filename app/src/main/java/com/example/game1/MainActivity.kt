@@ -1,258 +1,198 @@
 package com.example.game1
 
-import android.graphics.Rect
-import android.os.Bundle
+import android.content.Context
+import android.graphics.Color
+import android.os.*
 import android.view.View
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.content.Context
-import android.os.Build
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        private const val NUM_ROWS = 7
+        private const val NUM_COLS = 3
+        private const val PLAYER_ROW = NUM_ROWS - 1
+        private const val GAME_SPEED = 400L
+        private const val MAX_BOMBS = 4
+        private const val TICKS_PER_NEW_BOMBS = 2
+    }
 
-    private lateinit var actor: ImageView
-
+    private lateinit var hearts: Array<ImageView>
     private lateinit var btnLeft: ImageView
-
     private lateinit var btnRight: ImageView
-
-    private lateinit var bomb: ImageView
-
-    private lateinit var heart0: ImageView
-    private lateinit var heart1: ImageView
-    private lateinit var heart2: ImageView
-
     private lateinit var gameOverBG: View
     private lateinit var gameOverPanel: View
-
     private lateinit var btnRestart: View
-
     private lateinit var vibrator: Vibrator
 
-    // השחקן יתחיל משמאל/0      0 שמאל 1 אמצע 2 ימין
-    private var actorPosition = 0
+    private lateinit var cells: Array<Array<View>>
 
-    private var bombLane = 0
-
-    private var lifes = 3
-    private var alreadyHit: Boolean = false
+    private var playerCol = 1
+    private var lives = 3
     private var isGameOver = false
+    private var tickCounter = 0
+
+    private val handler = Handler(Looper.getMainLooper())
+
+    // רשימת טילים במקביל
+    private val bombs = mutableListOf<Bombs>()
+    data class Bombs(var row: Int, var col: Int)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+
         initViews()
-        initBomb()
-        initLife()
-
+        initMatrix()
+        resetGame()
+        startGameLoop()
     }
 
-private fun initViews() {
-    actor = findViewById(R.id.Chinese_actor)
-    btnLeft = findViewById(R.id.Left_arrow)
-    btnRight = findViewById(R.id.Right_arrow)
+    private fun initViews() {
+        hearts = arrayOf(
+            findViewById(R.id.heart0),
+            findViewById(R.id.heart1),
+            findViewById(R.id.heart2)
+        )
 
-    btnLeft.setOnClickListener { moveLeft() }
-    btnRight.setOnClickListener { moveRight() }
+        btnLeft = findViewById(R.id.Left_arrow)
+        btnRight = findViewById(R.id.Right_arrow)
+        gameOverBG = findViewById(R.id.game_over_bg)
+        gameOverPanel = findViewById(R.id.game_over_panel)
+        btnRestart = findViewById(R.id.btnRestart)
 
-    gameOverBG = findViewById(R.id.game_over_bg)
-    gameOverPanel = findViewById(R.id.game_over_panel)
-    btnRestart = findViewById(R.id.btnRestart)
-
-    btnRestart.setOnClickListener {
-        restartGame()
+        btnLeft.setOnClickListener { movePlayer(-1) }
+        btnRight.setOnClickListener { movePlayer(1) }
+        btnRestart.setOnClickListener { restartGame() }
     }
 
-    updateActorPosition()
-   }
-
-private fun initBomb() {
-    bomb = findViewById(R.id.Bomb)
-
-    bomb.post {
-        bombLane = (0..2).random()
-        bomb.x = getBombLaneX(bombLane)
-        bomb.y = 0f
-
-        startBombFall()
-    }
-}
-
-
-    private fun initLife(){
-        heart0 = findViewById(R.id.heart0)
-        heart1 = findViewById(R.id.heart1)
-        heart2 = findViewById(R.id.heart2)
-    }
-
-    private fun moveLeft() { // אם השחקן כבר בשמאל אז לא יזוז ואם בימין ישתנה לשמאל
-        if (actorPosition == 1) {
-            actorPosition = 0
-            updateActorPosition()
-        }
-        else if (actorPosition == 2) {
-            actorPosition = 1
-            updateActorPosition()
-        }
-    }
-    private fun moveRight() {
-        if (actorPosition == 0) {
-            actorPosition = 1
-            updateActorPosition()
-        }
-        else if (actorPosition == 1) {
-            actorPosition = 2
-            updateActorPosition()
+    private fun initMatrix() {
+        cells = Array(NUM_ROWS) { row ->
+            Array(NUM_COLS) { col ->
+                val idName = "mat_${row}_${col}"
+                val resId = resources.getIdentifier(idName, "id", packageName)
+                findViewById(resId)
+            }
         }
     }
 
-    private fun updateActorPosition() {
-        actor.animate()
-            .x(getLaneX(actorPosition))
-            .setDuration(150)
-            .start()
+    private fun startGameLoop() {
+        handler.post(gameRunnable)
     }
 
-
-    private fun getLaneX(position: Int): Float {
-        val screenWidth = resources.displayMetrics.widthPixels
-
-        return when (position) {
-            0 -> screenWidth * 0.05f   // שמאל
-            1 -> screenWidth * 0.40f   // אמצע
-            2 -> screenWidth * 0.75f   // ימין
-            else -> screenWidth * 0.35f
+    private val gameRunnable = object : Runnable {
+        override fun run() {
+            if (!isGameOver) {
+                moveBombs()
+                checkCollisions()
+                draw()
+                handler.postDelayed(this, GAME_SPEED)
+            }
         }
     }
 
-    private fun getBombLaneX(lane: Int): Float{
-        val screenWidth = resources.displayMetrics.widthPixels
+    private fun movePlayer(direction: Int) {
+        val newCol = playerCol + direction
+        if (newCol in 0 until NUM_COLS) playerCol = newCol
+    }
 
-        return when (lane)  {
-            0 -> screenWidth * 0.05f
-            1 -> screenWidth * 0.40f
-            2 -> screenWidth * 0.75f
-            else -> screenWidth * 0.35f
+    private fun moveBombs() {
+        // הזזת טילים קיימים
+        bombs.forEach { it.row++ }
+
+        // הסרת טילים שהגיעו לתחתית
+        bombs.removeAll { it.row > PLAYER_ROW }
+
+        // יצירת טיל חדש אם לא עברנו את המקסימום
+        tickCounter++
+        if (tickCounter >= TICKS_PER_NEW_BOMBS && bombs.size < MAX_BOMBS) {
+            if (Random.nextFloat() < 0.5f) {
+                bombs.add(Bombs(0, Random.nextInt(0, NUM_COLS)))
+            }
+            tickCounter = 0
         }
+    }
+
+    private fun checkCollisions() {
+        if (bombs.any { it.row == PLAYER_ROW && it.col == playerCol }) {
+            loseLife()
+        }
+    }
+
+    private fun draw() {
+        // ניקוי כל התאים
+        for (r in 0 until NUM_ROWS) {
+            for (c in 0 until NUM_COLS) {
+                cells[r][c].setBackgroundColor(Color.TRANSPARENT)
+            }
+        }
+
+        // ציור טילים
+        bombs.forEach {
+            if (it.row in 0 until NUM_ROWS) {
+                cells[it.row][it.col].setBackgroundResource(R.drawable.bomb_war_svgrepo_com)
+            }
+        }
+
+        // ציור השחקן
+        cells[PLAYER_ROW][playerCol].setBackgroundResource(R.drawable.chinese_svgrepo_com)
     }
 
     private fun loseLife() {
-        vibrate(150)  // רטט של 150m
-        lifes--
+        if (vibrator.hasVibrator()) {
+            vibrator.vibrate(VibrationEffect.createOneShot(120, VibrationEffect.DEFAULT_AMPLITUDE))
+        }
 
-        when (lifes) {
-            2 -> heart0.visibility = View.INVISIBLE
-            1 -> heart1.visibility = View.INVISIBLE
+        lives--
+        when (lives) {
+            2 -> hearts[0].visibility = View.INVISIBLE
+            1 -> hearts[1].visibility = View.INVISIBLE
             0 -> {
-                heart2.visibility = View.INVISIBLE
+                hearts[2].visibility = View.INVISIBLE
                 gameOver()
             }
         }
     }
 
-    private fun vibrate(duration: Long = 150) {
-        if (vibrator.hasVibrator()) {
-            val effect = VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE)
-            vibrator.vibrate(effect)
-        }
-    }
-
-
-    private fun startBombFall() {
-        if (isGameOver) return
-        val screenHeight = resources.displayMetrics.heightPixels
-        val bottomMargin = 150
-        val targetY = screenHeight - bottomMargin - bomb.height
-
-        bombLane = (0..2).random()
-        bomb.x = getBombLaneX(bombLane)
-        bomb.y = 0f
-        bomb.visibility = View.VISIBLE
-        alreadyHit = false  // אתחול לדגל בתחילת הנפילה
-
-        val animator = bomb.animate()
-            .y(targetY.toFloat())
-            .setDuration(3500)
-
-        // בדיקה מתמשכת תוך כדי הנפילה
-        val updateRunnable = object : Runnable {
-            override fun run() {
-                if (!alreadyHit && isCollision(bomb, actor)) {
-                    loseLife()
-                    alreadyHit = true  // מונע הורדת חיים שוב באותה נפילה
-                }
-                if (bomb.y < targetY) {
-                    bomb.postDelayed(this, 10) // בודק כל 10ms
-                }
-            }
-        }
-        bomb.post(updateRunnable)
-
-        animator.withEndAction {
-            bomb.visibility = View.INVISIBLE
-            bomb.postDelayed({
-                startBombFall()
-            }, 300)
-        }.start()
-    }
-
-
-    private fun isCollision(bomb: View, actor: View): Boolean {
-        val bombLeft = bomb.x // זה כבר כולל translationX
-        val bombTop = bomb.y  // זה כבר כולל translationY
-        val bombRight = bombLeft + bomb.width
-        val bombBottom = bombTop + bomb.height
-
-        val actorLeft = actor.x
-        val actorTop = actor.y
-        val actorRight = actorLeft + actor.width
-        val actorBottom = actorTop + actor.height
-
-        val padding = 110
-        val horizontalOverlap = bombRight - padding >= actorLeft + padding && bombLeft + padding <= actorRight - padding
-        val verticalOverlap = bombBottom - padding >= actorTop + padding && bombTop + padding <= actorBottom - padding
-
-        return horizontalOverlap && verticalOverlap
-
-    }
-
-
-
-    private fun restartGame() {
-        lifes = 3
-        alreadyHit = false
-        isGameOver = false
-
-        heart0.visibility = View.VISIBLE
-        heart1.visibility = View.VISIBLE
-        heart2.visibility = View.VISIBLE
-
-        gameOverBG.visibility = View.GONE
-        gameOverPanel.visibility = View.GONE
-
-        // הפצצה מתחילה מחדש
-        bomb.clearAnimation()
-        bomb.y = 0f
-        startBombFall()
-    }
-
     private fun gameOver() {
+        isGameOver = true
         gameOverBG.visibility = View.VISIBLE
         gameOverPanel.visibility = View.VISIBLE
-        isGameOver = true
+        handler.removeCallbacks(gameRunnable)
     }
 
+    private fun restartGame() {
+        resetGame()
+        startGameLoop()
+    }
+
+    private fun resetGame() {
+        isGameOver = false
+        lives = 3
+        hearts.forEach { it.visibility = View.VISIBLE }
+        gameOverBG.visibility = View.GONE
+        gameOverPanel.visibility = View.GONE
+        playerCol = 1
+        bombs.clear()
+        draw()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacks(gameRunnable)
+    }
 }
