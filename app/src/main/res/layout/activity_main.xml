@@ -31,26 +31,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/right_arrow_svgrepo_com" />
 
-<!--    <ImageView-->
-<!--        android:id="@+id/Bomb"-->
-<!--        android:layout_width="100dp"-->
-<!--        android:layout_height="236dp"-->
-<!--        android:layout_marginStart="20dp"-->
-<!--        android:layout_marginTop="16dp"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:srcCompat="@drawable/bomb_war_svgrepo_com" />-->
-
-<!--        <ImageView-->
-<!--        android:id="@+id/Chinese_actor"-->
-<!--        android:layout_width="89dp"-->
-<!--        android:layout_height="181dp"-->
-<!--        android:layout_marginBottom="16dp"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/Right_arrow"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:srcCompat="@drawable/chinese_svgrepo_com" />-->
-
     <LinearLayout
         android:id="@+id/hearts_container"
         android:layout_width="wrap_content"
