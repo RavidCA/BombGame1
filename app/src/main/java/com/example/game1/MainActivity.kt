@@ -19,7 +19,6 @@ class MainActivity : AppCompatActivity() {
         private const val PLAYER_ROW = NUM_ROWS - 1
         private const val GAME_SPEED = 400L
         private const val MAX_BOMBS = 4
-        private const val TICKS_PER_NEW_BOMBS = 2
     }
 
     private lateinit var hearts: Array<ImageView>
@@ -35,7 +34,6 @@ class MainActivity : AppCompatActivity() {
     private var playerCol = 1
     private var lives = 3
     private var isGameOver = false
-    private var tickCounter = 0
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -111,21 +109,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun moveBombs() {
-        // הזזת טילים קיימים
+
+        // הזזת כל הטילים למטה
         bombs.forEach { it.row++ }
 
-        // הסרת טילים שהגיעו לתחתית
+        // הסרת טילים שיצאו מהמסך
         bombs.removeAll { it.row > PLAYER_ROW }
 
-        // יצירת טיל חדש אם לא עברנו את המקסימום
-        tickCounter++
-        if (tickCounter >= TICKS_PER_NEW_BOMBS && bombs.size < MAX_BOMBS) {
-            if (Random.nextFloat() < 0.5f) {
-                bombs.add(Bombs(0, Random.nextInt(0, NUM_COLS)))
-            }
-            tickCounter = 0
+        // יצירת טיל חדש בכל טיק (כמעט תמיד)
+        if (bombs.size < MAX_BOMBS) {
+            bombs.add(
+                Bombs(
+                    row = 0,
+                    col = Random.nextInt(NUM_COLS)
+                )
+            )
         }
     }
+
 
     private fun checkCollisions() {
         if (bombs.any { it.row == PLAYER_ROW && it.col == playerCol }) {
@@ -144,12 +145,12 @@ class MainActivity : AppCompatActivity() {
         // ציור טילים
         bombs.forEach {
             if (it.row in 0 until NUM_ROWS) {
-                cells[it.row][it.col].setBackgroundResource(R.drawable.bomb_war_svgrepo_com)
+                cells[it.row][it.col].setBackgroundResource(R.drawable.alien)
             }
         }
 
         // ציור השחקן
-        cells[PLAYER_ROW][playerCol].setBackgroundResource(R.drawable.chinese_svgrepo_com)
+        cells[PLAYER_ROW][playerCol].setBackgroundResource(R.drawable.spaceman)
     }
 
     private fun loseLife() {

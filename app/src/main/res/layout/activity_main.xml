@@ -6,7 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/stars"
+    android:background="@drawable/background"
     android:layoutDirection="ltr"
     tools:context=".MainActivity">        <!-- ltr אומר שיכריח את המערכת לעבוד לפי שמאל לימין -->
 
@@ -41,7 +41,7 @@
 <!--        app:layout_constraintTop_toTopOf="parent"-->
 <!--        app:srcCompat="@drawable/bomb_war_svgrepo_com" />-->
 
-    <!--    <ImageView-->
+<!--        <ImageView-->
 <!--        android:id="@+id/Chinese_actor"-->
 <!--        android:layout_width="89dp"-->
 <!--        android:layout_height="181dp"-->
@@ -55,8 +55,8 @@
         android:id="@+id/hearts_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -95,7 +95,9 @@
         <LinearLayout
             android:layout_width="100dp"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="bottom"
+            android:paddingBottom="20dp">
 
                 <View
                     android:id="@+id/mat_0_0"
@@ -142,7 +144,9 @@
             android:layout_height="match_parent"
             android:layout_marginStart="18dp"
             android:layout_marginEnd="15dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="bottom"
+            android:paddingBottom="20dp">
                 <View
                     android:id="@+id/mat_0_1"
                     android:layout_gravity="center"
@@ -153,12 +157,14 @@
                     android:layout_gravity="center"
                     android:layout_width="80dp"
                     android:layout_height="80dp" />
-                <View
-                    android:id="@+id/mat_2_1"
-                    android:layout_gravity="center"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp" />
-                <View
+
+            <View
+                android:id="@+id/mat_2_1"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="center" />
+
+            <View
                     android:id="@+id/mat_3_1"
                     android:layout_gravity="center"
                     android:layout_width="80dp"
@@ -184,12 +190,15 @@
             <LinearLayout
             android:layout_width="100dp"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:gravity="bottom"
+            android:paddingBottom="20dp">
 
                 <View
                     android:id="@+id/mat_0_2"
                     android:layout_width="80dp"
                     android:layout_height="80dp" />
+
                 <View
                     android:id="@+id/mat_1_2"
                     android:layout_width="80dp"
