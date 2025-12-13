@@ -37,8 +37,8 @@ class MainActivity : AppCompatActivity() {
 
     private val handler = Handler(Looper.getMainLooper())
 
-    // רשימת טילים במקביל
-    private val bombs = mutableListOf<Bombs>()
+    // רשימת חייזרים במקביל
+    private val aliens = mutableListOf<Bombs>()
     data class Bombs(var row: Int, var col: Int)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,15 +110,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun moveBombs() {
 
-        // הזזת כל הטילים למטה
-        bombs.forEach { it.row++ }
+        // הזזת חייזרים
+        aliens.forEach { it.row++ }
 
-        // הסרת טילים שיצאו מהמסך
-        bombs.removeAll { it.row > PLAYER_ROW }
+        // מחיקת חייזרים שיצאו מהמטריצה
+        aliens.removeAll { it.row > PLAYER_ROW }
 
-        // יצירת טיל חדש בכל טיק (כמעט תמיד)
-        if (bombs.size < MAX_BOMBS) {
-            bombs.add(
+        // יצירת חייזר חדש
+        if (aliens.size < MAX_BOMBS) {
+            aliens.add(
                 Bombs(
                     row = 0,
                     col = Random.nextInt(NUM_COLS)
@@ -129,7 +129,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun checkCollisions() {
-        if (bombs.any { it.row == PLAYER_ROW && it.col == playerCol }) {
+        if (aliens.any { it.row == PLAYER_ROW && it.col == playerCol }) {
             loseLife()
         }
     }
@@ -142,8 +142,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // ציור טילים
-        bombs.forEach {
+        // ציור חייזרים
+        aliens.forEach {
             if (it.row in 0 until NUM_ROWS) {
                 cells[it.row][it.col].setBackgroundResource(R.drawable.alien)
             }
@@ -188,7 +188,7 @@ class MainActivity : AppCompatActivity() {
         gameOverBG.visibility = View.GONE
         gameOverPanel.visibility = View.GONE
         playerCol = 1
-        bombs.clear()
+        aliens.clear()
         draw()
     }
 
