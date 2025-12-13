@@ -38,8 +38,8 @@ class MainActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
 
     // רשימת חייזרים במקביל
-    private val aliens = mutableListOf<Bombs>()
-    data class Bombs(var row: Int, var col: Int)
+    private val aliens = mutableListOf<Aliens>()
+    data class Aliens(var row: Int, var col: Int)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
     private val gameRunnable = object : Runnable {
         override fun run() {
             if (!isGameOver) {
-                moveBombs()
+                moveAliens()
                 checkCollisions()
                 draw()
                 handler.postDelayed(this, GAME_SPEED)
@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity() {
         if (newCol in 0 until NUM_COLS) playerCol = newCol
     }
 
-    private fun moveBombs() {
+    private fun moveAliens() {
 
         // הזזת חייזרים
         aliens.forEach { it.row++ }
@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity() {
         // יצירת חייזר חדש
         if (aliens.size < MAX_BOMBS) {
             aliens.add(
-                Bombs(
+                Aliens(
                     row = 0,
                     col = Random.nextInt(NUM_COLS)
                 )
